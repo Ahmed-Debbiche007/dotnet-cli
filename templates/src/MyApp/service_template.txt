@@ -1,0 +1,19 @@
+using E.ApplicationCore.Domain;
+using E.ApplicationCore.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace E.ApplicationCore.Services
+{
+    public class Service{entity} : Service<{entity}>, IService{entity}
+    {
+        public Service{entity}(IUnitOfWork unitOfWork) : base(unitOfWork)
+        {
+        }
+
+       
+    }
+}
