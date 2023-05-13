@@ -2,7 +2,7 @@ from camel_case import to_camel_case
 import os
 def generate_service(name):
     # Define the file name and new entity name
-    filename = 'service_template.txt'
+    filename = 'templates/service_template.txt'
     
 
     # Read the original file content

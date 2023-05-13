@@ -1,0 +1,101 @@
+using E.ApplicationCore.Domain;
+using E.ApplicationCore.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging.Console;
+
+namespace E.WebApplication1.Controllers
+{
+    public class {entity}Controller : Controller
+    {
+        IService{entity} service;
+
+        public {entity}Controller(IService{entity} service)
+        {
+            this.service = service;
+        }
+
+        // GET: CompteController
+        public ActionResult Index()
+        {
+            return View(service.GetAll());
+        }
+
+        // GET: CompteController/Details/5
+        public ActionResult Details({data_type} id)
+        {
+            return View(service.GetById(id));
+        }
+
+        // GET: CompteController/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: CompteController/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create({entity} e)
+        {
+            try
+            {
+                service.Add (e);
+                service.Commit();
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+        // GET: CompteController/Edit/5
+        public ActionResult Edit({data_type} id)
+        {
+            return View(service.GetById(id));
+        }
+
+        // POST: CompteController/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit({data_type} id, {entity} e)
+        {
+            try
+            {
+                service.Update (e);
+                service.Commit();
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+        // GET: CompteController/Delete/5
+        public ActionResult Delete({data_type} id)
+        {
+            return View();
+        }
+
+        // POST: CompteController/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete({data_type} id)
+        {
+            try
+            {
+                service.Delete(service.GetById(id));
+                service.Commit();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
+    }
+}

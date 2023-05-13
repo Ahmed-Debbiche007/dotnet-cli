@@ -1,5 +1,6 @@
 import sys
 import os
+
 from entity import generate_entity
 from enumeration import generate_enum 
 from service import generate_service
@@ -13,6 +14,7 @@ def generate(entity_name, is_enum, is_entity):
         generate_entity(entity_name)
         generate_service(entity_name)
         generate_interface(entity_name)
+
 
 if __name__ == '__main__':
     name = sys.argv[1]

@@ -1,8 +1,8 @@
 from camel_case import to_camel_case
 import os
-def generate_interface(name):
+def generate_interface(name, data_type):
     # Define the file name and new entity name
-    filename = 'templates/interface_template.txt'
+    filename = 'templates/controller_template.txt'
     
 
     # Read the original file content
@@ -11,9 +11,10 @@ def generate_interface(name):
 
     # Replace all occurrences of '{entity}' with the new entity name
     new_file_content = file_content.replace('{entity}', name)
+    new_file_content = file_content.replace('{data_type}', data_type)
 
     # Define the new file name
-    new_filename = os.path.join('Interfaces',f"IService{to_camel_case(name)}.cs")
+    new_filename = os.path.join("Controllers",f"{to_camel_case(name)}Controller.cs")
 
     # Write the updated file content to the new file
     with open(new_filename, 'w') as f:

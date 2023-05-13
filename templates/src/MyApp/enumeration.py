@@ -12,7 +12,7 @@ def generate_enum(enum_name):
         values.append(value)
 
     # Read the enum template file
-    with open("enum_template.txt", "r") as f:
+    with open("templates/enum_template.txt", "r") as f:
         enum_template = f.read()
 
     # Replace placeholders in the template with actual values
