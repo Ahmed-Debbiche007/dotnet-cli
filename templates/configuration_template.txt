@@ -13,7 +13,7 @@ namespace E.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<{entity}> builder)
         {
-            {config}
+            //add config
         }
     }
 }

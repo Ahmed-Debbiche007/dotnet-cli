@@ -25,6 +25,7 @@ namespace E.WebApplication1.Controllers
         // GET: CompteController/Details/5
         public ActionResult Details({data_type} id)
         {
+            //ViewBags
             return View(service.GetById(id));
         }
 
@@ -54,6 +55,7 @@ namespace E.WebApplication1.Controllers
         // GET: CompteController/Edit/5
         public ActionResult Edit({data_type} id)
         {
+            //ViewBags
             return View(service.GetById(id));
         }
 

@@ -2,7 +2,8 @@ import click
 import os
 import re
 
-from configuration import generate_configuration, generate_key
+from configuration import generate_sponsoring_association, generate_key, generate_many_to_one, generate_many_to_many
+from utils import insert_lines_v2, insert_lines
 
 
 associations = ['OneToOne', 'OneToMany', 'ManyToOne', 'ManyToMany', 'SponsoringAssociation']
@@ -73,16 +74,22 @@ def generate_entity(entity_name):
         if 'id' in attribute.lower():
             attributes_code = f"        public {attribute_type} {attribute} {{ get; set; }}\n"
         elif (is_sponsor == False):
-            is_fluent=input("Do you want the priamry key to be configured with Fluent API?\n")
-            is_fluent = bool(is_fluent)
-            if is_fluent:
-                generate_key(entity_name, attribute)
-                attributes_code = f"        public {attribute_type} {attribute} {{ get; set; }}\n"
+            inherits = input ("Does this entity inherits another entity? (y/n)\n")
+            if (inherits == "y"):
+                for attribute, attribute_type in attributes[1:]:
+                    attributes_code += f"        public {attribute_type} {attribute} {{ get; set; }}\n"
+                entity_code = entity_template.replace(entity_name, generate_inheritance(entity_name))
             else:
-                attributes_code = f"        \[Key\]\n        public {attribute_type} {attribute} {{ get; set; }}\n"  
+                is_fluent=input("Do you want the priamry key to be configured with Fluent API?\n")
+                is_fluent = bool(is_fluent)
+                if is_fluent:
+                    generate_key(entity_name, attribute)
+                    attributes_code = f"        public {attribute_type} {attribute} {{ get; set; }}\n"
+                else:
+                    attributes_code = f"        \[Key\]\n        public {attribute_type} {attribute} {{ get; set; }}\n"  
         # Generate code for remaining attributes
-        for attribute, attribute_type in attributes[1:]:
-            attributes_code += f"        public {attribute_type} {attribute} {{ get; set; }}\n"
+            for attribute, attribute_type in attributes[1:]:
+                attributes_code += f"        public {attribute_type} {attribute} {{ get; set; }}\n"
 
     entity_code = entity_code.replace("{attributes}", attributes_code)
     entity_code = entity_code.replace("{relations}", relations_code)
@@ -93,7 +100,7 @@ def generate_entity(entity_name):
         f.write(entity_code)
     
     dbSet = [f"\t\tpublic DbSet<{entity_name}> {entity_name}s {{ get; set; }}\n"]
-    insert_lines_v2("// Add DBsets Here", dbSet)
+    insert_lines_v2("// Add DBsets Here", dbSet, "Configurations/ExamContext.cs")
     click.echo(f"Generated entity {entity_name} in {entity_file_path}")
 
 
@@ -106,22 +113,26 @@ def generate_associations(entity1, primary_key, entity2, association, entity3=No
     if (association == "OneToMany"):
         entity1_property = f"        public virtual IList<{entity2}> {entity2}s{{ get; set; }}\n"
         entity2_property = f"        public {primary_key} {entity1}Fk {{ get; set; }}\n        [ForeignKey(\"{entity1}Fk\")]\n        public virtual {entity1} {entity1} {{ get; set; }}\n"
+        generate_many_to_one(entity2, entity1)
     if (association == "ManyToOne"):
         entity1_property = f"        public {primary_key_type} {entity2}Fk {{ get; set; }}\n        [ForeignKey(\"{entity2}Fk\")]\n        public virtual {entity2} {entity2} {{ get; set; }}\n"
         entity2_property = f"        public virtual IList<{entity1}> {entity1}s{{ get; set; }}\n"
+        generate_many_to_one(entity1, entity2)
         
     if (association == "ManyToMany"):
         entity1_property = f"        public virtual IList<{entity2}> {entity2}s{{ get; set; }}\n"
         entity2_property = f"        public virtual IList<{entity1}> {entity1}s{{ get; set; }}\n"
+        generate_many_to_many(entity1,entity2)
+        
     if (association == "SponsoringAssociation"):
         primary_key_type_entity_3 = get_primary_key(entity3)
         entity1_property = f"        public virtual {entity2} {entity2} {{ get; set; }}\n"
         entity1_property+= f"        public virtual {entity3} {entity3} {{ get; set; }}\n"
         entity2_property = f"        public virtual IList<{entity1}> {entity1}s{{ get; set; }}\n"
         entity3_property = f"        public virtual IList<{entity1}> {entity1}s{{ get; set; }}\n"
-        insert_lines(entity3,'}',entity3_property)
-        generate_configuration(entity1, primary_key, entity2, entity3)
-    insert_lines(entity2,'}',entity2_property)
+        insert_lines(entity3,'}',entity3_property,f"Domain/{entity3}.cs")
+        generate_sponsoring_association(entity1, primary_key, entity2, entity3)
+    insert_lines(entity2,'}',entity2_property,f"Domain/{entity2}.cs")
     return (entity1, entity1_property)
 
 
@@ -146,53 +157,20 @@ def get_primary_key(entity_name):
 
         i += 1
 
-def insert_lines(entity,keyword, code):
-    # Read in the file as a list of lines
-    with open(f"Domain/{entity}.cs", "r") as f:
-        lines = f.readlines()
 
-    # Find the index of the second-to-last closing brace
-    last_brace_index = len(lines) - 1
-    second_last_brace_index = None
-    brace_count = 0
-    for i in range(len(lines)-1, -1, -1):
-        line = lines[i]
-        brace_count += line.count(keyword)
-        if brace_count == 2:
-            second_last_brace_index = i
+
+def generate_inheritance(entity_name):
+    inherited_entity = input("What entity Does it inherit?\n")
+    while True:
+        if os.path.isfile(f"Domain/{inherited_entity}.cs"):
             break
-        elif brace_count > 2:
-            last_brace_index = i
-
-    # Insert the lines to be added before the second-to-last closing brace
-    if second_last_brace_index is not None:
-        lines[second_last_brace_index:second_last_brace_index] = code
-    else:
-        lines[last_brace_index:last_brace_index] = code
-
-    # Write the modified lines back to the file
-    with open(f"Domain/{entity}.cs", "w") as f:
-        f.writelines(lines)
-
-
-def insert_lines_v2(keyword, lines_to_add):
-    # Read in the file as a list of lines
-    with open("Configurations/ExamContext.cs", "r") as f:
-        lines = f.readlines()
-
-    # Find the index of the line containing the keyword
-    keyword_index = None
-    for i, line in enumerate(lines):
-        if keyword in line:
-            keyword_index = i
+        else:
+            inherited_entity = input("Are you sure? Retype the inherited entity name:\n")
+    while True:
+        method = input ("TPT/TPH?\n")
+        if (method == "TPT"):
             break
-
-    # If the keyword is found, insert the lines before it
-    if keyword_index is not None:
-        lines = lines[:keyword_index] + lines_to_add + lines[keyword_index:]
-
-    # Write the modified lines back to the file
-    with open("Configurations/ExamContext.cs", "w") as f:
-        f.writelines(lines)
-
-
+        if (method == "TPH"):
+            break
+        method = input("Sorry, But TPT or TPH ?\n")
+    return f"{entity_name}:{inherited_entity}"
