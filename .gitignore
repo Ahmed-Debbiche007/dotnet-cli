@@ -2,4 +2,6 @@
 **/Domain/
 **/Interfaces/
 **/Services/
+**/Configurations/
+
 push.py

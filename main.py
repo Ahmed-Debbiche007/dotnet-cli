@@ -14,6 +14,7 @@ def generate(entity_name, is_enum, is_entity):
         generate_entity(entity_name)
         generate_service(entity_name)
         generate_interface(entity_name)
+        
 
 
 if __name__ == '__main__':
