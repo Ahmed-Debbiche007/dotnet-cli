@@ -1,6 +1,10 @@
 import click
 import os
 import re
+
+from configuration import generate_configuration, generate_key
+
+
 associations = ['OneToOne', 'OneToMany', 'ManyToOne', 'ManyToMany', 'SponsoringAssociation']
 net_data_types = ['boolean', 'double', 'int', 'string', 'DateTime', 'relation', 'Enum']
 def generate_entity(entity_name):
@@ -51,11 +55,12 @@ def generate_entity(entity_name):
     # Replace placeholders in the template with actual values
     entity_code = entity_template.replace("{entity_name}", entity_name)
 
-
+    is_sponsor = False
     relations_code = ""
     for relation_type, related_entity, *other_entities in relations:
         attribute,primary_key=attributes[0]
         if relation_type == "SponsoringAssociation":
+            is_sponsor = True
             related_entity2 = other_entities[0]
             result, result_property = generate_associations(entity1=entity_name,primary_key=primary_key, entity2=related_entity, association=relation_type, entity3=related_entity2)
             relations_code += result_property
@@ -65,16 +70,16 @@ def generate_entity(entity_name):
 
     if attributes:
         attribute, attribute_type = attributes[0]
-        if 'id' in attribute_type or 'Id' in attribute_type or 'ID' in attribute_type:
+        if 'id' in attribute.lower():
             attributes_code = f"        public {attribute_type} {attribute} {{ get; set; }}\n"
-        else:
-            is_fluent=input("Do you want the priamry key to be configured with Fluent API?")
+        elif (is_sponsor == False):
+            is_fluent=input("Do you want the priamry key to be configured with Fluent API?\n")
             is_fluent = bool(is_fluent)
             if is_fluent:
-                pass
+                generate_key(entity_name, attribute)
+                attributes_code = f"        public {attribute_type} {attribute} {{ get; set; }}\n"
             else:
                 attributes_code = f"        \[Key\]\n        public {attribute_type} {attribute} {{ get; set; }}\n"  
-
         # Generate code for remaining attributes
         for attribute, attribute_type in attributes[1:]:
             attributes_code += f"        public {attribute_type} {attribute} {{ get; set; }}\n"
@@ -99,22 +104,23 @@ def generate_associations(entity1, primary_key, entity2, association, entity3=No
         entity1_property = f"        public {primary_key_type} {entity2}Fk {{ get; set; }}\n        [ForeignKey(\"{entity2}Fk\")]\n        public virtual {entity2} {entity2} {{ get; set; }}\n"
         entity2_property = f"        public {primary_key} {entity1}Fk {{ get; set; }}\n        [ForeignKey(\"{entity1}Fk\")]\n        public virtual {entity1} {entity1} {{ get; set; }}\n"
     if (association == "OneToMany"):
-        entity1_property = f"        public virtual IList<{entity2}> {entity2}{{ get; set; }}\n"
+        entity1_property = f"        public virtual IList<{entity2}> {entity2}s{{ get; set; }}\n"
         entity2_property = f"        public {primary_key} {entity1}Fk {{ get; set; }}\n        [ForeignKey(\"{entity1}Fk\")]\n        public virtual {entity1} {entity1} {{ get; set; }}\n"
     if (association == "ManyToOne"):
         entity1_property = f"        public {primary_key_type} {entity2}Fk {{ get; set; }}\n        [ForeignKey(\"{entity2}Fk\")]\n        public virtual {entity2} {entity2} {{ get; set; }}\n"
-        entity2_property = f"        public virtual IList<{entity1}> {entity1}{{ get; set; }}\n"
+        entity2_property = f"        public virtual IList<{entity1}> {entity1}s{{ get; set; }}\n"
         
     if (association == "ManyToMany"):
-        entity1_property = f"        public virtual IList<{entity2}> {entity2}{{ get; set; }}\n"
-        entity2_property = f"        public virtual IList<{entity1}> {entity1}{{ get; set; }}\n"
+        entity1_property = f"        public virtual IList<{entity2}> {entity2}s{{ get; set; }}\n"
+        entity2_property = f"        public virtual IList<{entity1}> {entity1}s{{ get; set; }}\n"
     if (association == "SponsoringAssociation"):
         primary_key_type_entity_3 = get_primary_key(entity3)
         entity1_property = f"        public virtual {entity2} {entity2} {{ get; set; }}\n"
         entity1_property+= f"        public virtual {entity3} {entity3} {{ get; set; }}\n"
-        entity2_property = f"        public virtual IList<{entity1}> {entity1}{{ get; set; }}\n"
-        entity3_property = f"        public virtual IList<{entity1}> {entity1}{{ get; set; }}\n"
+        entity2_property = f"        public virtual IList<{entity1}> {entity1}s{{ get; set; }}\n"
+        entity3_property = f"        public virtual IList<{entity1}> {entity1}s{{ get; set; }}\n"
         insert_lines(entity3,'}',entity3_property)
+        generate_configuration(entity1, primary_key, entity2, entity3)
     insert_lines(entity2,'}',entity2_property)
     return (entity1, entity1_property)
 

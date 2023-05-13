@@ -18,11 +18,12 @@ def generate(entity_name, is_enum, is_entity):
 
 
 if __name__ == '__main__':
-    name = sys.argv[1]
-    is_enum = False
-    is_entity = False
-    if len(sys.argv) > 2 and sys.argv[2] == "--enum":
-        is_enum = True
-    if len(sys.argv) > 2 and sys.argv[2] == "--entity":
-        is_entity = True
-    generate(name, is_enum, is_entity)
+    if (sys.argv[1]=="generate"):
+        name = sys.argv[2]
+        is_enum = False
+        is_entity = False
+        if len(sys.argv) > 3 and sys.argv[3] == "--enum":
+            is_enum = True
+        if len(sys.argv) > 3 and sys.argv[3] == "--entity":
+            is_entity = True
+        generate(name, is_enum, is_entity)
