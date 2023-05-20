@@ -1,6 +1,6 @@
 from camel_case import to_camel_case
 import os
-def generate_interface(name, data_type):
+def generate_controller(name, data_type):
     # Define the file name and new entity name
     filename = 'templates/controller_template.txt'
     

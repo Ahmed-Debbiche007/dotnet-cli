@@ -2,7 +2,7 @@ import click
 import os
 import re
 
-from configuration import generate_sponsoring_association, generate_key, generate_many_to_one, generate_many_to_many
+from configuration import generate_sponsoring_association, generate_key, generate_many_to_one, generate_many_to_many, generate_inheritance_tph, generate_inheritance_tpt
 from utils import insert_lines_v2, insert_lines
 
 
@@ -54,7 +54,7 @@ def generate_entity(entity_name):
         entity_template = f.read()
 
     # Replace placeholders in the template with actual values
-    entity_code = entity_template.replace("{entity_name}", entity_name)
+    
 
     is_sponsor = False
     relations_code = ""
@@ -72,24 +72,25 @@ def generate_entity(entity_name):
     if attributes:
         attribute, attribute_type = attributes[0]
         if 'id' in attribute.lower():
+            entity_code = entity_template.replace("{entity_name}", entity_name)
             attributes_code = f"        public {attribute_type} {attribute} {{ get; set; }}\n"
         elif (is_sponsor == False):
             inherits = input ("Does this entity inherits another entity? (y/n)\n")
-            if (inherits == "y"):
-                for attribute, attribute_type in attributes[1:]:
-                    attributes_code += f"        public {attribute_type} {attribute} {{ get; set; }}\n"
-                entity_code = entity_template.replace(entity_name, generate_inheritance(entity_name))
+            if (inherits == "y") or (inherits == "yes"):
+                entity_code = entity_template.replace("{entity_name}", generate_inheritance(entity_name))
+                attributes_code = f"        public {attribute_type} {attribute} {{ get; set; }}\n"
             else:
+                entity_code = entity_template.replace("{entity_name}", entity_name)
                 is_fluent=input("Do you want the priamry key to be configured with Fluent API?\n")
-                is_fluent = bool(is_fluent)
-                if is_fluent:
+                
+                if is_fluent == "y" or is_fluent == "yes":
                     generate_key(entity_name, attribute)
                     attributes_code = f"        public {attribute_type} {attribute} {{ get; set; }}\n"
                 else:
-                    attributes_code = f"        \[Key\]\n        public {attribute_type} {attribute} {{ get; set; }}\n"  
+                    attributes_code = f"        [Key]\n        public {attribute_type} {attribute} {{ get; set; }}\n"  
         # Generate code for remaining attributes
-            for attribute, attribute_type in attributes[1:]:
-                attributes_code += f"        public {attribute_type} {attribute} {{ get; set; }}\n"
+        for attribute, attribute_type in attributes[1:]:
+            attributes_code += f"        public {attribute_type} {attribute} {{ get; set; }}\n"
 
     entity_code = entity_code.replace("{attributes}", attributes_code)
     entity_code = entity_code.replace("{relations}", relations_code)
@@ -169,8 +170,12 @@ def generate_inheritance(entity_name):
     while True:
         method = input ("TPT/TPH?\n")
         if (method == "TPT"):
+            generate_inheritance_tpt(inherited_entity, entity_name)
             break
         if (method == "TPH"):
+            generate_inheritance_tph(inherited_entity, entity_name)
             break
-        method = input("Sorry, But TPT or TPH ?\n")
+        else:
+            method = input("Sorry, But TPT or TPH ?\n")
     return f"{entity_name}:{inherited_entity}"
+
