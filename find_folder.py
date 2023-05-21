@@ -11,3 +11,12 @@ def find_folder(start_path, folder_name):
         path = find_folder(os.path.join(start_path, dir), regex_pattern)
         if path is not None:
             return path
+        
+
+
+def create_folder(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Folder created: {folder_path}")
+    else:
+        print(f"Folder already exists: {folder_path}")

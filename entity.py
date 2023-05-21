@@ -161,6 +161,29 @@ def get_primary_key(entity_name):
 
         i += 1
 
+def get_primary_key_name(entity_name):
+    file_path = f"Domain/{entity_name}.cs"
+    with open(file_path, "r") as f:
+        entity = f.readlines()
+    # Check if the primary key is annotated with [Key]
+    results = []
+    i = 0
+    while i < len(entity):
+        line = entity[i]
+
+        if '[Key]' in line:
+            if i+1 < len(entity):
+                words = entity[i+1].strip().split()
+                return words[1]
+        
+        elif 'id' in line or 'Id' in line or 'ID' in line:
+            words = line.strip().split()
+            return words[1]
+        else:
+            return (get_key(file_path)).strip().split(" ")[2]
+
+        i += 1
+
 
 
 def generate_inheritance(entity_name):
