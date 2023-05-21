@@ -3,7 +3,7 @@ import os
 import re
 
 from configuration import generate_sponsoring_association, generate_key, generate_many_to_one, generate_many_to_many, generate_inheritance_tph, generate_inheritance_tpt
-from utils import insert_lines_v2, insert_lines
+from utils import insert_lines_v2, insert_lines, get_key
 
 
 associations = ['OneToOne', 'OneToMany', 'ManyToOne', 'ManyToMany', 'SponsoringAssociation']
@@ -139,7 +139,8 @@ def generate_associations(entity1, primary_key, entity2, association, entity3=No
 
 
 def get_primary_key(entity_name):
-    with open(f"Domain/{entity_name}.cs", "r") as f:
+    file_path = f"Domain/{entity_name}.cs"
+    with open(file_path, "r") as f:
         entity = f.readlines()
     # Check if the primary key is annotated with [Key]
     results = []
@@ -155,6 +156,8 @@ def get_primary_key(entity_name):
         elif 'id' in line or 'Id' in line or 'ID' in line:
             words = line.strip().split()
             return words[1]
+        else:
+            return (get_key(file_path)).strip().split(" ")[1]
 
         i += 1
 

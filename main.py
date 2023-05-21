@@ -2,10 +2,11 @@ import sys
 import os
 import re
 
-from entity import generate_entity
+from entity import generate_entity, get_primary_key
 from enumeration import generate_enum 
 from service import generate_service
 from interface import generate_interface
+from controller import generate_controller
 
 def generate(entity_name, is_enum, is_entity):
     """Generate code"""
@@ -47,3 +48,8 @@ if __name__ == '__main__':
         if len(sys.argv) > 3 and sys.argv[3] == "--entity":
             is_entity = True
         generate(name, is_enum, is_entity)
+    if (sys.argv[1]=="mvc"):
+        generate_controller()
+    
+    
+

@@ -32,6 +32,7 @@ namespace E.WebApplication1.Controllers
         // GET: CompteController/Create
         public ActionResult Create()
         {
+            //ViewBags
             return View();
         }
 

@@ -1,4 +1,7 @@
 import os
+import re
+
+
 def insert_lines_v2(keyword, lines_to_add, file_path):
     # Read in the file as a list of lines
     with open(file_path, "r") as f:
@@ -89,3 +92,39 @@ def string_exists_in_file(file_path, search_string):
         return False
 
 
+def find_dotnet_classes_and_enums(folder_path):
+    dotnet_classes = []
+    dotnet_enums = []
+
+    # Regular expressions to match .NET class and enum patterns
+    class_pattern = r"\bclass\s+(\w+)\b"
+    enum_pattern = r"\benum\s+(\w+)\b"
+
+    # Iterate over files in the folder
+    for root, dirs, files in os.walk(folder_path):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+
+            # Check if the file_name is a C# (.cs) file
+            if file_name.endswith(".cs"):
+                with open(file_path, "r") as f:
+                    content = f.read()
+
+                    # Search for class matches
+                    class_matches = re.findall(class_pattern, content)
+                    dotnet_classes.extend(class_matches)
+
+                    # Search for enum matches
+                    enum_matches = re.findall(enum_pattern, content)
+                    dotnet_enums.extend(enum_matches)
+
+    return dotnet_classes, dotnet_enums
+
+
+def get_key(file_path):
+    with open(file_path, "r") as file:
+        lines = file.readlines()
+        if len(lines) >= 13:
+            return lines[12] 
+        else:
+            return None  

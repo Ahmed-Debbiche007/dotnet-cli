@@ -25,7 +25,7 @@ def generate_enum(enum_name):
     enum_code = enum_code.replace("{values}", values_code)
 
     # Write the generated code to a file
-    enum_file_path = os.path.join(f"{enum_name}.cs")
+    enum_file_path = os.path.join('Domain',f"{enum_name}.cs")
     with open(enum_file_path, "w") as f:
         f.write(enum_code)
 
