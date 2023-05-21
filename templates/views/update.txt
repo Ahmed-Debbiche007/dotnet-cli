@@ -1,4 +1,4 @@
-@model E.ApplicationCore.Domain.Banque
+@model E.ApplicationCore.Domain.{entity}
 
 @{
     ViewData["Title"] = "Edit";

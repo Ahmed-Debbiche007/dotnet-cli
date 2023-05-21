@@ -1,4 +1,4 @@
-@model IEnumerable<E.ApplicationCore.Domain.Compte>
+@model IEnumerable<E.ApplicationCore.Domain.{entity}>
 
 @{
     ViewData["Title"] = "Index";

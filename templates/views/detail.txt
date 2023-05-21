@@ -1,4 +1,4 @@
-﻿@model Examen.ApplicationCore.Domain.Compte
+﻿@model Examen.ApplicationCore.Domain.{entity}
 
 @{
     ViewData["Title"] = "Details";
