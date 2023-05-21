@@ -66,7 +66,7 @@ def insert_config_to_file(entity, config, source_filename, destination_filename)
     else:
         with open(destination_filename, 'w') as f:
             f.write(file_content)
-        insert_lines_v2("//config", f"modelBuilder.ApplyConfiguration(new {entity}Configuration() );", config_filename)
+        insert_lines_v2("//config", f"\t\t\t\tmodelBuilder.ApplyConfiguration(new {entity}Configuration() );\n", config_filename)
 
     insert_lines_v2("//add config", config, destination_filename)
 

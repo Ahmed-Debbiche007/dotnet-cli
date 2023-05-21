@@ -55,7 +55,7 @@ def generate_entity(entity_name):
 
     # Replace placeholders in the template with actual values
     
-
+    attributes_code=""
     is_sponsor = False
     relations_code = ""
     for relation_type, related_entity, *other_entities in relations:
@@ -91,7 +91,7 @@ def generate_entity(entity_name):
         # Generate code for remaining attributes
         for attribute, attribute_type in attributes[1:]:
             attributes_code += f"        public {attribute_type} {attribute} {{ get; set; }}\n"
-
+    entity_code = entity_template.replace("{entity_name}", entity_name)
     entity_code = entity_code.replace("{attributes}", attributes_code)
     entity_code = entity_code.replace("{relations}", relations_code)
 
@@ -101,7 +101,7 @@ def generate_entity(entity_name):
         f.write(entity_code)
     
     dbSet = [f"\t\tpublic DbSet<{entity_name}> {entity_name}s {{ get; set; }}\n"]
-    insert_lines_v2("// Add DBsets Here", dbSet, "Configurations/ExamContext.cs")
+    insert_lines_v2("//Add DBsets Here", dbSet, "Configurations/ExamContext.cs")
     click.echo(f"Generated entity {entity_name} in {entity_file_path}")
 
 
@@ -140,26 +140,24 @@ def generate_associations(entity1, primary_key, entity2, association, entity3=No
 
 def get_primary_key(entity_name):
     file_path = f"Domain/{entity_name}.cs"
-    with open(file_path, "r") as f:
-        entity = f.readlines()
-    # Check if the primary key is annotated with [Key]
-    results = []
-    i = 0
-    while i < len(entity):
-        line = entity[i]
-
-        if '[Key]' in line:
-            if i+1 < len(entity):
-                words = entity[i+1].strip().split()
-                return words[1]
+    try:
+        with open(file_path, "r") as f:
+            entity = f.readlines()
         
-        elif 'id' in line or 'Id' in line or 'ID' in line:
-            words = line.strip().split()
-            return words[1]
-        else:
-            return (get_key(file_path)).strip().split(" ")[1]
+        for i, line in enumerate(entity):
+            if '[Key]' in line:
+                if i+1 < len(entity):
+                    words = entity[i+1].strip().split()
+                    return words[1]
 
-        i += 1
+            elif re.search(r'\b[id|ID]\b', line):
+                words = line.strip().split()
+                return words[1]
+              
+    
+    except FileNotFoundError:
+        raise ValueError("File not found: " + file_path)
+    return (get_key(file_path)).strip().split(" ")[1]
 
 def get_primary_key_name(entity_name):
     file_path = f"Domain/{entity_name}.cs"
@@ -179,10 +177,13 @@ def get_primary_key_name(entity_name):
         elif 'id' in line or 'Id' in line or 'ID' in line:
             words = line.strip().split()
             return words[1]
-        else:
-            return (get_key(file_path)).strip().split(" ")[2]
-
         i += 1
+    key = get_key(file_path)
+    if key and len(key.split(" "))>=3:
+        return key.strip().split(" ")[2]
+    else:
+        return None
+
 
 
 

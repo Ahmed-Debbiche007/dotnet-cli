@@ -25,9 +25,9 @@ def insert_lines_v2(keyword, lines_to_add, file_path):
         for line in lines:
             try:
                 line = line.replace("{entity}", entity)
-                f.writelines(line)
             except:
                 pass
+            f.writelines(line)
 
 
 def insert_lines(entity,keyword, code, file_path):

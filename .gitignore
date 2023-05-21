@@ -2,7 +2,7 @@
 **/Domain/
 **/Interfaces/
 **/Services/
-**/Configurations/
 **/Controllers/
+**/Web/
 **/Views/
 push.py
